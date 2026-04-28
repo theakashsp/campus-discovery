@@ -2,7 +2,22 @@ import Link from 'next/link';
 
 export interface Course {
   name: string;
+  fees: string;
   duration: string;
+  eligibility: string;
+}
+
+export interface Placements {
+  highest_package: string;
+  avg_package: string;
+  placement_percent: number;
+  recruiters: string[];
+}
+
+export interface Admission {
+  exams: string[];
+  dates: string;
+  process: string;
 }
 
 export interface College {
@@ -15,20 +30,21 @@ export interface College {
   fees_min: number;
   fees_max: number;
   rating: number;
-  placement_percent: number;
-  avg_package: number;
+  description: string;
+  establishment_year: number;
+  accreditation: string;
+  ranking: number | null;
   courses: Course[];
+  placements: Placements;
+  admission: Admission;
   website_url?: string;
-  accreditation?: string;
 }
 
 interface CollegeCardProps {
   college: College;
-  isSelected: boolean;
-  onToggle: (college: College) => void;
 }
 
-export default function CollegeCard({ college, isSelected, onToggle }: CollegeCardProps) {
+export default function CollegeCard({ college }: CollegeCardProps) {
   const openWebsite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -40,39 +56,30 @@ export default function CollegeCard({ college, isSelected, onToggle }: CollegeCa
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition transform hover:scale-105 p-6 border border-gray-100 flex flex-col h-full relative group">
       
-      {/* Badges container */}
+      {/* Badges */}
       <div className="absolute -top-3 -right-3 flex flex-col gap-1 items-end z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         {college.rating >= 4.7 && (
           <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded shadow-sm">
             ⭐ Top Rated
           </span>
         )}
-        {college.placement_percent >= 95 && (
+        {college.placements.placement_percent >= 95 && (
           <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
             🚀 Highly Placed
           </span>
         )}
       </div>
 
-      <div className="flex justify-between items-start mb-2">
+      <div className="flex justify-between items-start mb-4">
         <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-1 rounded">
           {college.type}
         </span>
-        <input
-          type="checkbox"
-          className="w-5 h-5 text-blue-600 rounded cursor-pointer mt-1 flex-shrink-0"
-          checked={isSelected}
-          onChange={(e) => {
-            e.stopPropagation();
-            onToggle(college);
-          }}
-        />
       </div>
 
-      <Link href={`/college/${college.id}`} className="block flex-grow cursor-pointer group-hover:text-blue-600 transition-colors">
+      <div className="flex-grow">
         <h2 className="text-xl font-bold text-gray-800 line-clamp-2 pr-4 mb-4">{college.name}</h2>
         
-        <div className="space-y-3 text-gray-600 flex-grow text-sm">
+        <div className="space-y-3 text-gray-600 text-sm">
           <div className="flex items-center">
             <span className="text-lg mr-2">📍</span>
             <span className="truncate">{college.location}</span>
@@ -89,13 +96,13 @@ export default function CollegeCard({ college, isSelected, onToggle }: CollegeCa
           </div>
           <div className="flex items-center">
             <span className="text-lg mr-2">📈</span>
-            <span className="font-semibold text-green-600">{college.placement_percent}%</span> Placed ({college.avg_package} LPA)
+            <span className="font-semibold text-green-600">{college.placements.placement_percent}%</span> Placed ({college.placements.avg_package})
           </div>
         </div>
-      </Link>
+      </div>
       
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <div className="flex flex-wrap gap-2 mb-4">
+      <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-3">
+        <div className="flex flex-wrap gap-2">
           {college.courses.slice(0, 3).map(course => (
             <span key={course.name} className="px-2 py-1 bg-gray-50 text-gray-700 border border-gray-200 text-xs font-medium rounded-full">
               {course.name}
@@ -108,17 +115,22 @@ export default function CollegeCard({ college, isSelected, onToggle }: CollegeCa
           )}
         </div>
         
-        {college.website_url && (
-          <button 
-            className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm flex justify-center items-center gap-2"
-            onClick={openWebsite}
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <Link 
+            href={`/college/${college.id}`}
+            className="w-full bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition font-medium text-sm flex justify-center items-center text-center"
           >
-            Visit Website
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </button>
-        )}
+            View Details
+          </Link>
+          {college.website_url && (
+            <button 
+              className="w-full bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition font-medium text-sm flex justify-center items-center gap-2"
+              onClick={openWebsite}
+            >
+              Website
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CollegeCard, { College } from "../components/CollegeCard";
 import FilterBar from "../components/FilterBar";
-import CompareTable from "../components/CompareTable";
 
 function CollegePlatform() {
   const router = useRouter();
@@ -19,7 +18,6 @@ function CollegePlatform() {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
 
-  // Sync state from URL
   const query = searchParams.get("name") || "";
   const state = searchParams.get("state") || "";
   const city = searchParams.get("city") || "";
@@ -27,9 +25,6 @@ function CollegePlatform() {
   const course = searchParams.get("course") || "";
   const maxFees = searchParams.get("maxFees") || "";
 
-  const [selected, setSelected] = useState<College[]>([]);
-
-  // Local state for dropdowns
   const [allStates, setAllStates] = useState<string[]>([]);
   const [allCities, setAllCities] = useState<string[]>([]);
   const [allTypes, setAllTypes] = useState<string[]>([]);
@@ -91,7 +86,6 @@ function CollegePlatform() {
   };
 
   useEffect(() => {
-    // Whenever URL params change, reset to page 1 and fetch
     setPage(1);
     const timer = setTimeout(() => {
       fetchColleges(1);
@@ -112,7 +106,6 @@ function CollegePlatform() {
     } else {
       params.delete(key);
     }
-    // If state changes, reset city
     if (key === 'state') params.delete('city');
     router.push(`/?${params.toString()}`, { scroll: false });
   };
@@ -121,28 +114,12 @@ function CollegePlatform() {
     router.push("/", { scroll: false });
   };
 
-  const toggleSelect = (college: College) => {
-    if (selected.find((c) => c.id === college.id)) {
-      setSelected(selected.filter((c) => c.id !== college.id));
-    } else {
-      if (selected.length < 3) {
-        setSelected([...selected, college]);
-      } else {
-        alert("You can compare up to 3 colleges only");
-      }
-    }
-  };
-
-  const clearSelection = () => {
-    setSelected([]);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
       <header className="bg-blue-600 text-white py-6 shadow-md">
         <div className="container mx-auto px-6">
           <h1 className="text-3xl font-extrabold tracking-tight">Campus Compare</h1>
-          <p className="mt-2 text-blue-100">Find and compare the best colleges for your future.</p>
+          <p className="mt-2 text-blue-100">Find the best colleges for your future.</p>
         </div>
       </header>
 
@@ -156,25 +133,15 @@ function CollegePlatform() {
           maxFees={maxFees} setMaxFees={(v) => updateFilters('maxFees', v)}
           course={course} setCourse={(v) => updateFilters('course', v)}
           states={allStates}
-          cities={state ? allCities.filter(c => true /* Backend filter handles this optimally later */) : allCities} // Simple fallback, usually API handles dynamic dropdowns
+          cities={state ? allCities : allCities} // Simple fallback
           types={allTypes}
           courses={allCourses}
         />
-
-        {selected.length >= 2 && (
-          <CompareTable 
-            selectedColleges={selected}
-            onClear={clearSelection}
-          />
-        )}
 
         <div className="mt-8 flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
             {totalCount > 0 ? `${totalCount} Colleges Found` : 'Top Colleges'}
           </h2>
-          <div className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-200">
-            {selected.length}/3 selected for comparison
-          </div>
         </div>
 
         {error ? (
@@ -209,12 +176,7 @@ function CollegePlatform() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {colleges.map((college) => (
-                <CollegeCard 
-                  key={college.id} 
-                  college={college} 
-                  isSelected={selected.some(c => c.id === college.id)}
-                  onToggle={toggleSelect}
-                />
+                <CollegeCard key={college.id} college={college} />
               ))}
             </div>
             
