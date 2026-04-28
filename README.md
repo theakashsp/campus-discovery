@@ -1,36 +1,220 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Campus Compare – College Discovery & Decision Platform
 
-## Getting Started
+A production-ready full-stack web application that helps students **discover, filter, and compare colleges** to make better academic decisions.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🌐 Live Demo
+
+* Frontend: (Add Vercel URL here)
+* Backend API: (Add Render URL here)
+
+---
+
+## 🎯 Objective
+
+Build a **college discovery + decision platform** inspired by Careers360 and Collegedunia.
+
+This project focuses on:
+
+* Real-world usability
+* Decision-making features
+* Clean UI + full-stack architecture
+
+---
+
+## 🧠 Core Features
+
+### 🔍 College Listing + Search
+
+* View colleges in a responsive grid
+* Search by college name
+* Real-time filtering
+
+### 🎯 Filters
+
+* Filter by location
+* Filter by maximum fees
+
+### ⚖️ Compare Colleges (High Priority Feature)
+
+* Select up to 3 colleges
+* View comparison table:
+
+| Feature     | Compared |
+| ----------- | -------- |
+| Fees        | ₹        |
+| Rating      | ⭐        |
+| Placement % | %        |
+| Location    | City     |
+
+* Highlights best values:
+
+  * Highest rating
+  * Highest placement
+  * Lowest fees
+
+### 🏫 Clean UI
+
+* Modern responsive design
+* Tailwind CSS styling
+* Smooth hover animations
+
+---
+
+## 🏗️ Tech Stack
+
+### Frontend
+
+* Next.js
+* Tailwind CSS
+
+### Backend
+
+* Node.js
+* Express.js
+
+### Data
+
+* JSON-based dataset (20+ colleges)
+
+### Deployment
+
+* Vercel
+* Render
+
+---
+
+## 📁 Project Structure
+
+```
+campus-compare/
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   ├── styles/
+│   └── utils/
+│
+├── backend/
+│   ├── routes/
+│   ├── controllers/
+│   ├── data/
+│   └── index.js
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ⚙️ Setup Instructions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Clone Repository
 
-## Learn More
+```
+git clone https://github.com/your-username/campus-compare.git
+cd campus-compare
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. Backend Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+cd backend
+npm install
+npm run dev
+```
 
-## Deploy on Vercel
+Backend runs on:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+http://localhost:5000
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+### 3. Frontend Setup
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs on:
+
+```
+http://localhost:3000
+```
+
+---
+
+### 4. Environment Variables
+
+Create file:
+
+```
+frontend/.env.local
+```
+
+Add:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:5000
+```
+
+---
+
+## 🔌 API Endpoints
+
+| Method | Endpoint      | Description         |
+| ------ | ------------- | ------------------- |
+| GET    | /colleges     | Get all colleges    |
+| GET    | /colleges/:id | Get college details |
+| GET    | /search       | Filter colleges     |
+
+---
+
+## 🎨 UI Highlights
+
+* Responsive grid layout
+* Smooth hover effects
+* Clean comparison table
+* User-friendly filtering system
+
+---
+
+## 🧪 Future Improvements
+
+* 🔐 Authentication (login + saved colleges)
+* 📊 Advanced recommendation system
+* 📍 Map-based college search
+* 🧠 AI-based college prediction
+
+---
+
+## 🏆 Key Learning Outcomes
+
+* Full-stack development (frontend + backend)
+* REST API design
+* State management in React
+* UI/UX design with Tailwind
+* Debugging and deployment
+
+---
+
+## 👨‍💻 Author
+
+**Akash S P**
+
+---
+
+## 📌 Note
+
+This project was built as part of a **high-agency product engineering assignment**, focusing on:
+
+* Ownership
+* Problem solving
+* Real-world implementation
+
+---
+
+⭐ If you like this project, feel free to star the repo!
