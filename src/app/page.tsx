@@ -1,256 +1,182 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import CollegeCard, { College } from "../components/CollegeCard";
-import FilterBar from "../components/FilterBar";
+import { useRef, useState } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Environment, Float, PresentationControls, ContactShadows } from "@react-three/drei";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
-function CollegePlatform() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [colleges, setColleges] = useState<College[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState("");
-
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
-
-  // Global search
-  const [searchInput, setSearchInput] = useState(searchParams.get("query") || "");
-
-  // URL state
-  const query = searchParams.get("query") || "";
-  const state = searchParams.get("state") || "";
-  const city = searchParams.get("city") || "";
-  const type = searchParams.get("type") || "";
-  const course = searchParams.get("course") || "";
-  const maxFees = searchParams.get("maxFees") || "";
-
-  const [allStates, setAllStates] = useState<string[]>([]);
-  const [allCities, setAllCities] = useState<string[]>([]);
-  const [allTypes, setAllTypes] = useState<string[]>([]);
-  const [allCourses, setAllCourses] = useState<string[]>([]);
-
-  // Derived cities
-  const availableCities = state ? allCities.filter(() => true) : allCities;
-
-  useEffect(() => {
-    const fetchMetadata = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/colleges/filters`);
-        const data = await res.json();
-        
-        setAllStates(data.states);
-        setAllCities(data.cities);
-        setAllTypes(data.types);
-        setAllCourses(data.courses);
-      } catch (err) {
-        console.error("Could not fetch metadata");
-      }
-    };
-    fetchMetadata();
-  }, []);
-
-  const fetchColleges = async (pageNum: number, isLoadMore: boolean = false) => {
-    try {
-      if (isLoadMore) setLoadingMore(true);
-      else setLoading(true);
-      
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      
-      const params = new URLSearchParams();
-      params.append("page", pageNum.toString());
-      params.append("limit", "12");
-      if (query) params.append("query", query);
-      if (state) params.append("state", state);
-      if (city) params.append("city", city);
-      if (type) params.append("type", type);
-      if (course) params.append("course", course);
-      if (maxFees) params.append("maxFees", maxFees);
-
-      const res = await fetch(`${apiUrl}/colleges?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch data");
-      const { data, meta } = await res.json();
-      
-      if (isLoadMore) {
-        setColleges(prev => [...prev, ...data]);
-      } else {
-        setColleges(data);
-      }
-      
-      setTotalCount(meta.total);
-      setHasMore(pageNum < meta.totalPages);
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+function AbstractShape() {
+  const meshRef = useRef<any>();
+  
+  useFrame((state) => {
+    const t = state.clock.getElapsedTime();
+    if (meshRef.current) {
+      meshRef.current.rotation.x = Math.cos(t / 4) / 2;
+      meshRef.current.rotation.y = Math.sin(t / 4) / 2;
+      meshRef.current.rotation.z = Math.sin(t / 1.5) / 2;
+      meshRef.current.position.y = Math.sin(t / 1.5) / 10;
     }
-  };
-
-  useEffect(() => {
-    setPage(1);
-    const timer = setTimeout(() => {
-      fetchColleges(1);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query, state, city, type, course, maxFees]);
-
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchColleges(nextPage, true);
-  };
-
-  const updateFilters = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    if (key === 'state') params.delete('city');
-    router.push(`/?${params.toString()}`, { scroll: false });
-  };
-
-  const handleGlobalSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setSearchInput(val);
-    updateFilters("query", val);
-  };
-
-  const clearFilters = () => {
-    setSearchInput("");
-    router.push("/", { scroll: false });
-  };
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
-      {/* Massive Hero Banner */}
-      <header className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-20 shadow-lg relative overflow-hidden">
-        {/* Abstract Background Design */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-          <div className="absolute rounded-full w-96 h-96 bg-white -top-20 -left-20 blur-3xl"></div>
-          <div className="absolute rounded-full w-96 h-96 bg-blue-400 bottom-0 right-10 blur-3xl"></div>
-        </div>
-
-        <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 drop-shadow-md">
-            Search Colleges, Courses and Exams
-          </h1>
-          <p className="text-xl md:text-2xl text-blue-100 mb-10 font-medium">
-            Discover the best path for your future career among 100+ top institutions.
-          </p>
-          
-          <div className="relative max-w-3xl mx-auto shadow-2xl">
-            <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-              <span className="text-3xl">🔍</span>
-            </div>
-            <input
-              type="text"
-              className="w-full pl-16 pr-6 py-5 rounded-xl text-gray-900 text-xl border-4 border-transparent focus:border-blue-400 focus:outline-none transition-all"
-              placeholder="Search by college name, city, or course (e.g., IIT Delhi, Mumbai, MBA)..."
-              value={searchInput}
-              onChange={handleGlobalSearch}
-            />
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-6 py-12">
-        
-        <div className="mb-10">
-          <h3 className="text-lg font-bold text-gray-600 uppercase tracking-wider mb-4">Refine Your Search</h3>
-          <FilterBar 
-            state={state} setState={(v) => updateFilters('state', v)}
-            city={city} setCity={(v) => updateFilters('city', v)}
-            type={type} setType={(v) => updateFilters('type', v)}
-            maxFees={maxFees} setMaxFees={(v) => updateFilters('maxFees', v)}
-            course={course} setCourse={(v) => updateFilters('course', v)}
-            states={allStates}
-            cities={availableCities}
-            types={allTypes}
-            courses={allCourses}
-          />
-        </div>
-
-        <div className="flex justify-between items-end mb-8 border-b pb-4">
-          <h2 className="text-3xl font-extrabold text-gray-800">
-            {query ? `Search Results for "${query}"` : 'Top Rated Colleges'}
-          </h2>
-          <span className="text-lg font-bold text-blue-600 bg-blue-50 px-4 py-1 rounded-full border border-blue-200">
-            {totalCount} Found
-          </span>
-        </div>
-
-        {error ? (
-          <div className="bg-red-50 text-red-600 p-8 rounded-xl text-center text-lg font-medium border border-red-200">
-            {error}
-          </div>
-        ) : loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 h-72 animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-                <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="space-y-3 mb-6">
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-full"></div>
-                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                </div>
-                <div className="mt-auto flex gap-2 pt-4 border-t">
-                  <div className="h-10 bg-gray-200 rounded flex-1"></div>
-                  <div className="h-10 bg-gray-200 rounded flex-1"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : colleges.length === 0 ? (
-          <div className="bg-white p-16 rounded-2xl border border-gray-200 text-center shadow-sm">
-            <span className="text-6xl block mb-6">🏜️</span>
-            <h3 className="text-2xl font-bold text-gray-800">No colleges matched your criteria</h3>
-            <p className="text-gray-500 mt-2 text-lg">Try searching for broader terms or clearing your filters.</p>
-            <button 
-              onClick={clearFilters}
-              className="mt-6 px-8 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow"
-            >
-              Clear All Filters & Search
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {colleges.map((college) => (
-                <CollegeCard key={college.id} college={college} />
-              ))}
-            </div>
-            
-            {hasMore && (
-              <div className="mt-16 flex justify-center">
-                <button
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  className="bg-white border-2 border-blue-600 text-blue-600 font-bold text-lg px-12 py-4 rounded-full hover:bg-blue-50 transition focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:opacity-50 shadow-md"
-                >
-                  {loadingMore ? 'Loading more colleges...' : 'Explore More'}
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </main>
-    </div>
+    <Float speed={1.5} rotationIntensity={1} floatIntensity={2}>
+      <mesh ref={meshRef} castShadow receiveShadow>
+        <torusKnotGeometry args={[1, 0.3, 128, 32]} />
+        <meshPhysicalMaterial 
+          color="#3b82f6" 
+          metalness={0.8}
+          roughness={0.2}
+          clearcoat={1}
+          clearcoatRoughness={0.1}
+        />
+      </mesh>
+    </Float>
   );
 }
 
 export default function Home() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/search?query=${encodeURIComponent(query)}`);
+    } else {
+      router.push("/search");
+    }
+  };
+
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex justify-center items-center"><div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div></div>}>
-      <CollegePlatform />
-    </Suspense>
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans overflow-hidden">
+      
+      {/* 3D Hero Section */}
+      <section className="relative h-[85vh] flex items-center bg-gradient-to-br from-slate-900 to-blue-900 overflow-hidden">
+        
+        {/* 3D Canvas Background */}
+        <div className="absolute inset-0 z-0 opacity-60">
+          <Canvas shadows camera={{ position: [0, 0, 5], fov: 45 }}>
+            <ambientLight intensity={0.5} />
+            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} castShadow />
+            <pointLight position={[-10, -10, -10]} />
+            <PresentationControls
+              global
+              config={{ mass: 2, tension: 500 }}
+              snap={{ mass: 4, tension: 1500 }}
+              rotation={[0, 0.3, 0]}
+              polar={[-Math.PI / 3, Math.PI / 3]}
+              azimuth={[-Math.PI / 1.4, Math.PI / 2]}
+            >
+              <AbstractShape />
+            </PresentationControls>
+            <Environment preset="city" />
+            <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={20} blur={2} far={10} />
+          </Canvas>
+        </div>
+
+        {/* Hero Content */}
+        <div className="container mx-auto px-6 relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="max-w-4xl"
+          >
+            <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight tracking-tight mb-6 drop-shadow-lg">
+              Find and Compare the <span className="text-blue-400">Best Colleges</span> in India
+            </h1>
+            <p className="text-xl md:text-2xl text-blue-100 mb-10 max-w-2xl font-medium">
+              Your gateway to 100+ premium institutions. Real data, real websites, real futures.
+            </p>
+
+            <form onSubmit={handleSearch} className="relative max-w-3xl shadow-2xl group">
+              <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                <span className="text-3xl transition-transform group-hover:scale-110 duration-300">🔍</span>
+              </div>
+              <input
+                type="text"
+                className="w-full pl-16 pr-32 py-5 rounded-2xl text-gray-900 text-xl md:text-2xl border-4 border-transparent focus:border-blue-400 focus:outline-none transition-all shadow-inner"
+                placeholder="Search colleges, cities, or courses..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <button 
+                type="submit"
+                className="absolute right-3 top-3 bottom-3 bg-blue-600 text-white font-bold px-8 rounded-xl hover:bg-blue-700 transition-colors shadow-md"
+              >
+                Search
+              </button>
+            </form>
+
+            <div className="mt-8 flex gap-4 text-blue-200 text-sm font-medium">
+              <span>Popular:</span>
+              <button onClick={() => router.push('/search?query=IIT')} className="hover:text-white transition-colors underline decoration-blue-500/50 underline-offset-4">IITs</button>
+              <button onClick={() => router.push('/search?query=MBA')} className="hover:text-white transition-colors underline decoration-blue-500/50 underline-offset-4">Top MBAs</button>
+              <button onClick={() => router.push('/search?query=Medical')} className="hover:text-white transition-colors underline decoration-blue-500/50 underline-offset-4">Medical</button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Feature Section */}
+      <section className="py-24 bg-white relative z-20">
+        <div className="container mx-auto px-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-3xl mx-auto mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-4">Why Choose Campus Compare?</h2>
+            <p className="text-gray-600 text-lg">We provide authentic, data-driven insights to help you make the most important decision of your career.</p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {[
+              { icon: "🏛️", title: "Authentic Data", desc: "Direct links to official college websites and verified institutional data." },
+              { icon: "📊", title: "Deep Analytics", desc: "Compare placement records, fee structures, and course availabilities effortlessly." },
+              { icon: "⚡", title: "Real-time Search", desc: "Instant filtering across hundreds of colleges, courses, and cities." }
+            ].map((feature, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                className="bg-gray-50 p-8 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow duration-300 group"
+              >
+                <div className="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">{feature.icon}</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-3">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+          
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="mt-20 text-center"
+          >
+            <button 
+              onClick={() => router.push('/search')}
+              className="bg-gray-900 text-white font-bold text-lg px-12 py-4 rounded-full shadow-xl hover:bg-blue-600 transition-colors duration-300"
+            >
+              Explore All Institutions
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-400 py-12 mt-auto relative z-20">
+        <div className="container mx-auto px-6 text-center">
+          <div className="text-2xl font-extrabold text-white mb-4 tracking-tight">Campus Compare</div>
+          <p>© 2026 Campus Compare Inc. All rights reserved.</p>
+        </div>
+      </footer>
+    </div>
   );
 }

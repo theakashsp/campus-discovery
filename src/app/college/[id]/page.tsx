@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { College } from "../../../components/CollegeCard";
 
+import { AnimatePresence, motion } from "framer-motion";
+
 export default function CollegeDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -53,7 +55,11 @@ export default function CollegeDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12"
+    >
       {/* Header Banner */}
       <div className="bg-blue-600 text-white py-12 shadow-md">
         <div className="container mx-auto px-6 max-w-6xl">
@@ -61,7 +67,10 @@ export default function CollegeDetailPage() {
             &larr; Back to Listings
           </button>
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-            <div>
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+            >
               <span className="inline-block bg-blue-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
                 {college.type}
               </span>
@@ -71,8 +80,13 @@ export default function CollegeDetailPage() {
                 <p className="flex items-center gap-1">⭐ {college.rating} / 5.0 Rating</p>
                 <p className="flex items-center gap-1">🏆 Rank #{college.ranking || 'N/A'}</p>
               </div>
-            </div>
-            <div className="flex gap-3 w-full lg:w-auto">
+            </motion.div>
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="flex gap-3 w-full lg:w-auto"
+            >
               {college.website_url && (
                 <a 
                   href={college.website_url} 
@@ -86,91 +100,118 @@ export default function CollegeDetailPage() {
               <button className="flex-1 lg:flex-none bg-orange-500 text-white font-bold px-8 py-3 rounded-lg shadow hover:bg-orange-600 transition">
                 Apply Now
               </button>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
 
       <main className="container mx-auto px-6 mt-8 max-w-6xl">
         {/* Tabs Navigation */}
-        <div className="flex overflow-x-auto border-b border-gray-200 mb-8 hide-scrollbar">
+        <div className="flex overflow-x-auto border-b border-gray-200 mb-8 hide-scrollbar relative">
           {['info', 'courses', 'placements', 'admission'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-8 py-4 font-bold text-sm uppercase tracking-wider whitespace-nowrap transition-colors ${
+              className={`relative px-8 py-4 font-bold text-sm uppercase tracking-wider whitespace-nowrap transition-colors ${
                 activeTab === tab 
-                  ? 'border-b-4 border-blue-600 text-blue-600' 
+                  ? 'text-blue-600' 
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
               }`}
             >
               {tab === 'info' ? 'Info' : tab === 'courses' ? 'Courses & Fees' : tab}
+              {activeTab === tab && (
+                <motion.div 
+                  layoutId="activeTab"
+                  className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600"
+                />
+              )}
             </button>
           ))}
         </div>
 
         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200 min-h-[400px]">
-          {/* TAB 1: INFO */}
-          {activeTab === 'info' && (
-            <div className="space-y-8 animate-fadeIn">
-              <section>
-                <h2 className="text-2xl font-bold mb-4 text-gray-800">About {college.name}</h2>
-                <p className="text-gray-600 leading-relaxed text-lg">{college.description}</p>
-              </section>
+          <AnimatePresence mode="wait">
+            {/* TAB 1: INFO */}
+            {activeTab === 'info' && (
+              <motion.div 
+                key="info"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
+                <section>
+                  <h2 className="text-2xl font-bold mb-4 text-gray-800">About {college.name}</h2>
+                  <p className="text-gray-600 leading-relaxed text-lg">{college.description}</p>
+                </section>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="p-6 bg-gray-50 rounded-lg border border-gray-100">
-                  <p className="text-sm text-gray-500 font-medium mb-1">Established</p>
-                  <p className="text-xl font-bold text-gray-900">{college.establishment_year}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="p-6 bg-gray-50 rounded-lg border border-gray-100">
+                    <p className="text-sm text-gray-500 font-medium mb-1">Established</p>
+                    <p className="text-xl font-bold text-gray-900">{college.establishment_year}</p>
+                  </div>
+                  <div className="p-6 bg-gray-50 rounded-lg border border-gray-100">
+                    <p className="text-sm text-gray-500 font-medium mb-1">Accreditation</p>
+                    <p className="text-xl font-bold text-gray-900">{college.accreditation || "N/A"}</p>
+                  </div>
+                  <div className="p-6 bg-gray-50 rounded-lg border border-gray-100">
+                    <p className="text-sm text-gray-500 font-medium mb-1">Institution Type</p>
+                    <p className="text-xl font-bold text-gray-900">{college.type}</p>
+                  </div>
+                  <div className="p-6 bg-blue-50 rounded-lg border border-blue-100">
+                    <p className="text-sm text-blue-800 font-medium mb-1">National Ranking</p>
+                    <p className="text-2xl font-extrabold text-blue-900">#{college.ranking || "N/A"}</p>
+                  </div>
                 </div>
-                <div className="p-6 bg-gray-50 rounded-lg border border-gray-100">
-                  <p className="text-sm text-gray-500 font-medium mb-1">Accreditation</p>
-                  <p className="text-xl font-bold text-gray-900">{college.accreditation || "N/A"}</p>
-                </div>
-                <div className="p-6 bg-gray-50 rounded-lg border border-gray-100">
-                  <p className="text-sm text-gray-500 font-medium mb-1">Institution Type</p>
-                  <p className="text-xl font-bold text-gray-900">{college.type}</p>
-                </div>
-                <div className="p-6 bg-blue-50 rounded-lg border border-blue-100">
-                  <p className="text-sm text-blue-800 font-medium mb-1">National Ranking</p>
-                  <p className="text-2xl font-extrabold text-blue-900">#{college.ranking || "N/A"}</p>
-                </div>
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
 
-          {/* TAB 2: COURSES & FEES */}
-          {activeTab === 'courses' && (
-            <div className="animate-fadeIn">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800">Courses & Fee Structure</h2>
-              <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
-                <table className="w-full text-left bg-white">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="p-4 font-bold text-gray-700 uppercase text-sm tracking-wider">Course</th>
-                      <th className="p-4 font-bold text-gray-700 uppercase text-sm tracking-wider">Fees</th>
-                      <th className="p-4 font-bold text-gray-700 uppercase text-sm tracking-wider">Duration</th>
-                      <th className="p-4 font-bold text-gray-700 uppercase text-sm tracking-wider">Eligibility</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {college.courses.map((course, idx) => (
-                      <tr key={idx} className="hover:bg-blue-50 transition-colors">
-                        <td className="p-4 font-bold text-gray-900">{course.name}</td>
-                        <td className="p-4 font-medium text-blue-700">{course.fees}</td>
-                        <td className="p-4 text-gray-600">{course.duration}</td>
-                        <td className="p-4 text-gray-600">{course.eligibility}</td>
+            {/* TAB 2: COURSES & FEES */}
+            {activeTab === 'courses' && (
+              <motion.div 
+                key="courses"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Courses & Fee Structure</h2>
+                <div className="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+                  <table className="w-full text-left bg-white">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="p-4 font-bold text-gray-700 uppercase text-sm tracking-wider">Course</th>
+                        <th className="p-4 font-bold text-gray-700 uppercase text-sm tracking-wider">Fees</th>
+                        <th className="p-4 font-bold text-gray-700 uppercase text-sm tracking-wider">Duration</th>
+                        <th className="p-4 font-bold text-gray-700 uppercase text-sm tracking-wider">Eligibility</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {college.courses.map((course, idx) => (
+                        <tr key={idx} className="hover:bg-blue-50 transition-colors">
+                          <td className="p-4 font-bold text-gray-900">{course.name}</td>
+                          <td className="p-4 font-medium text-blue-700">{course.fees}</td>
+                          <td className="p-4 text-gray-600">{course.duration}</td>
+                          <td className="p-4 text-gray-600">{course.eligibility}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
 
-          {/* TAB 3: PLACEMENTS */}
-          {activeTab === 'placements' && (
-            <div className="space-y-8 animate-fadeIn">
+            {/* TAB 3: PLACEMENTS */}
+            {activeTab === 'placements' && (
+              <motion.div 
+                key="placements"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-8"
+              >
               <h2 className="text-2xl font-bold mb-6 text-gray-800">Placement Highlights</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -198,12 +239,19 @@ export default function CollegeDetailPage() {
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* TAB 4: ADMISSION */}
           {activeTab === 'admission' && (
-            <div className="space-y-8 animate-fadeIn">
+            <motion.div 
+              key="admission"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-8"
+            >
               <h2 className="text-2xl font-bold mb-6 text-gray-800">Admission Details</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -236,11 +284,11 @@ export default function CollegeDetailPage() {
                   {college.admission.process}
                 </p>
               </div>
-            </div>
+            </motion.div>
           )}
-
+          </AnimatePresence>
         </div>
       </main>
-    </div>
+    </motion.div>
   );
 }
