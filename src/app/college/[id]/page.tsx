@@ -61,26 +61,45 @@ export default function CollegeDetailPage() {
       className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12"
     >
       {/* Header Banner */}
-      <div className="bg-blue-600 text-white py-12 shadow-md">
-        <div className="container mx-auto px-6 max-w-6xl">
-          <button onClick={() => router.back()} className="text-blue-100 hover:text-white mb-6 flex items-center text-sm font-medium transition">
+      <div className="relative bg-gray-900 text-white shadow-xl h-80 flex items-end">
+        {college.image_url && (
+          <img 
+            src={college.image_url} 
+            alt="Campus" 
+            className="absolute inset-0 w-full h-full object-cover opacity-40"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"></div>
+        <div className="container mx-auto px-6 max-w-6xl relative z-10 pb-8">
+          <button onClick={() => router.back()} className="text-gray-300 hover:text-white mb-6 flex items-center text-sm font-medium transition absolute top-6 left-6">
             &larr; Back to Listings
           </button>
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
+              className="flex items-end gap-6"
             >
-              <span className="inline-block bg-blue-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
-                {college.type}
-              </span>
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">{college.name}</h1>
-              <div className="flex flex-wrap items-center gap-4 text-blue-100">
-                <p className="flex items-center gap-1">📍 {college.location}</p>
-                <p className="flex items-center gap-1">⭐ {college.rating} / 5.0 Rating</p>
-                <p className="flex items-center gap-1">🏆 Rank #{college.ranking || 'N/A'}</p>
+              {college.logo_url && (
+                <img 
+                  src={college.logo_url} 
+                  alt="Logo" 
+                  className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg bg-white hidden md:block"
+                />
+              )}
+              <div>
+                <span className="inline-block bg-blue-500 text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
+                  {college.type}
+                </span>
+                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-white">{college.name}</h1>
+                <div className="flex flex-wrap items-center gap-4 text-gray-200">
+                  <p className="flex items-center gap-1">📍 {college.location}</p>
+                  <p className="flex items-center gap-1">⭐ {college.rating} / 5.0 Rating</p>
+                  <p className="flex items-center gap-1">🏆 Rank #{college.ranking || 'N/A'}</p>
+                </div>
               </div>
             </motion.div>
+
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
