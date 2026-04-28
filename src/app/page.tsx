@@ -1,39 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, Float, PresentationControls, ContactShadows } from "@react-three/drei";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 
-function AbstractShape() {
-  const meshRef = useRef<any>();
-  
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (meshRef.current) {
-      meshRef.current.rotation.x = Math.cos(t / 4) / 2;
-      meshRef.current.rotation.y = Math.sin(t / 4) / 2;
-      meshRef.current.rotation.z = Math.sin(t / 1.5) / 2;
-      meshRef.current.position.y = Math.sin(t / 1.5) / 10;
-    }
-  });
-
-  return (
-    <Float speed={1.5} rotationIntensity={1} floatIntensity={2}>
-      <mesh ref={meshRef} castShadow receiveShadow>
-        <torusKnotGeometry args={[1, 0.3, 128, 32]} />
-        <meshPhysicalMaterial 
-          color="#3b82f6" 
-          metalness={0.8}
-          roughness={0.2}
-          clearcoat={1}
-          clearcoatRoughness={0.1}
-        />
-      </mesh>
-    </Float>
-  );
-}
+// Lazily load the 3D component with SSR disabled
+const Hero3D = dynamic(() => import("../components/Hero3D"), { ssr: false });
 
 export default function Home() {
   const router = useRouter();
@@ -52,28 +25,13 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans overflow-hidden">
       
       {/* 3D Hero Section */}
-      <section className="relative h-[85vh] flex items-center bg-gradient-to-br from-slate-900 to-blue-900 overflow-hidden">
+      <section className="relative h-[85vh] flex items-center bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 overflow-hidden">
         
-        {/* 3D Canvas Background */}
-        <div className="absolute inset-0 z-0 opacity-60">
-          <Canvas shadows camera={{ position: [0, 0, 5], fov: 45 }}>
-            <ambientLight intensity={0.5} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} castShadow />
-            <pointLight position={[-10, -10, -10]} />
-            <PresentationControls
-              global
-              config={{ mass: 2, tension: 500 }}
-              snap={{ mass: 4, tension: 1500 }}
-              rotation={[0, 0.3, 0]}
-              polar={[-Math.PI / 3, Math.PI / 3]}
-              azimuth={[-Math.PI / 1.4, Math.PI / 2]}
-            >
-              <AbstractShape />
-            </PresentationControls>
-            <Environment preset="city" />
-            <ContactShadows position={[0, -2, 0]} opacity={0.4} scale={20} blur={2} far={10} />
-          </Canvas>
-        </div>
+        {/* 3D Canvas Background (Lazy Loaded) */}
+        <Hero3D />
+
+        {/* Gradient Overlay for better text readability */}
+        <div className="absolute inset-0 z-0 bg-black/30 pointer-events-none"></div>
 
         {/* Hero Content */}
         <div className="container mx-auto px-6 relative z-10">
@@ -83,14 +41,14 @@ export default function Home() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-4xl"
           >
-            <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight tracking-tight mb-6 drop-shadow-lg">
+            <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight tracking-tight mb-6 drop-shadow-xl">
               Find and Compare the <span className="text-blue-400">Best Colleges</span> in India
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-10 max-w-2xl font-medium">
+            <p className="text-xl md:text-2xl text-gray-200 mb-10 max-w-2xl font-medium drop-shadow-md">
               Your gateway to 100+ premium institutions. Real data, real websites, real futures.
             </p>
 
-            <form onSubmit={handleSearch} className="relative max-w-3xl shadow-2xl group">
+            <form onSubmit={handleSearch} className="relative max-w-3xl shadow-2xl group transition-transform duration-300 hover:scale-[1.01]">
               <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
                 <span className="text-3xl transition-transform group-hover:scale-110 duration-300">🔍</span>
               </div>
@@ -103,13 +61,13 @@ export default function Home() {
               />
               <button 
                 type="submit"
-                className="absolute right-3 top-3 bottom-3 bg-blue-600 text-white font-bold px-8 rounded-xl hover:bg-blue-700 transition-colors shadow-md"
+                className="absolute right-3 top-3 bottom-3 bg-blue-600 text-white font-bold px-8 rounded-xl hover:bg-blue-700 transition-colors shadow-md active:scale-95"
               >
                 Search
               </button>
             </form>
 
-            <div className="mt-8 flex gap-4 text-blue-200 text-sm font-medium">
+            <div className="mt-8 flex gap-4 text-gray-300 text-sm font-medium">
               <span>Popular:</span>
               <button onClick={() => router.push('/search?query=IIT')} className="hover:text-white transition-colors underline decoration-blue-500/50 underline-offset-4">IITs</button>
               <button onClick={() => router.push('/search?query=MBA')} className="hover:text-white transition-colors underline decoration-blue-500/50 underline-offset-4">Top MBAs</button>

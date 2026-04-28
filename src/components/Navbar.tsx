@@ -29,18 +29,18 @@ export default function Navbar() {
       <nav
         className={`fixed w-full z-50 transition-all duration-300 ${
           isScrolled || pathname !== "/"
-            ? "bg-white shadow-md py-3"
+            ? "bg-white/85 backdrop-blur-lg shadow-sm border-b border-gray-100 py-3"
             : "bg-transparent py-5"
         }`}
       >
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg ${isScrolled || pathname !== "/" ? "bg-blue-600 text-white" : "bg-white text-blue-600"}`}>
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-lg transition-transform group-hover:scale-105 ${isScrolled || pathname !== "/" ? "bg-blue-600 text-white" : "bg-white text-blue-600"}`}>
               C
             </div>
             <span
-              className={`text-2xl font-extrabold tracking-tight ${
-                isScrolled || pathname !== "/" ? "text-blue-900" : "text-white"
+              className={`text-2xl font-extrabold tracking-tight transition-colors ${
+                isScrolled || pathname !== "/" ? "text-gray-900 group-hover:text-blue-600" : "text-white"
               }`}
             >
               Campus Compare
