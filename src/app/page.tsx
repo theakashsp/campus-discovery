@@ -5,9 +5,9 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import CollegeCard, { College } from "../../components/CollegeCard";
+import CollegeCard, { College } from "@/components/CollegeCard";
 
-const Hero3D = dynamic(() => import("../../components/Hero3D"), { ssr: false });
+const Hero3D = dynamic(() => import("@/components/Hero3D"), { ssr: false });
 
 export default function Home() {
   const router = useRouter();
@@ -17,22 +17,18 @@ export default function Home() {
   const [topColleges, setTopColleges] = useState<College[]>([]);
 
   useEffect(() => {
-    // Auth & Nearby logic
     const userData = localStorage.getItem("user");
     if (userData) {
       const parsed = JSON.parse(userData);
       setUser(parsed);
       fetchNearby(parsed.city);
     } else {
-      // Default to Bangalore if no user
       fetchNearby("Bangalore");
     }
 
-    // Fetch general top colleges
     const fetchTop = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/colleges?limit=6`);
+        const res = await fetch(`/api/colleges?limit=6`);
         const data = await res.json();
         setTopColleges(data.data);
       } catch (err) {
@@ -44,10 +40,9 @@ export default function Home() {
 
   const fetchNearby = async (city: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const res = await fetch(`${apiUrl}/colleges/nearby?city=${encodeURIComponent(city)}`);
+      const res = await fetch(`/api/colleges?city=${encodeURIComponent(city)}&limit=4`);
       const data = await res.json();
-      setNearbyColleges(data.slice(0, 4));
+      setNearbyColleges(data.data.slice(0, 4));
     } catch (err) {
       console.error(err);
     }
@@ -184,7 +179,7 @@ export default function Home() {
                     <td className="p-4 font-extrabold text-gray-900">#{idx + 1}</td>
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <img src={col.logo_url} className="w-10 h-10 rounded border hidden sm:block" />
+                        <img src={col.logo_url} className="w-10 h-10 rounded border hidden sm:block" alt={col.name} />
                         <div>
                           <p className="font-bold text-gray-900 line-clamp-1">{col.name}</p>
                           <p className="text-xs text-gray-500">{col.location}</p>
@@ -221,11 +216,10 @@ export default function Home() {
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-6 max-w-7xl">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-10">Top Study Places</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {["Bangalore", "Delhi", "Hyderabad", "Pune", "Chennai", "Mumbai"].map((city) => (
-              <div key={city} onClick={() => router.push(`/search?query=${city}`)} className="relative h-32 rounded-2xl overflow-hidden cursor-pointer group">
-                <img src={`https://source.unsplash.com/random/400x300/?${city},city`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors"></div>
+              <div key={city} onClick={() => router.push(`/search?query=${city}`)} className="relative h-32 rounded-2xl overflow-hidden cursor-pointer group bg-gradient-to-br from-blue-500 to-indigo-600">
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <h3 className="text-white font-bold text-lg">{city}</h3>
                 </div>
@@ -269,16 +263,20 @@ export default function Home() {
       {/* ----------------- SECTION 9: NEWS ----------------- */}
       <section className="py-20 bg-white border-t border-gray-100">
         <div className="container mx-auto px-6 max-w-7xl">
-          <h2 className="text-3xl font-extrabold text-gray-900 mb-10">Latest News & Updates</h2>
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-10">Latest News &amp; Updates</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
+            {[
+              { title: "Top Universities Announce Early Application Deadlines", tag: "Admissions 2026" },
+              { title: "NIRF Rankings 2026: IIT Madras Retains Top Spot", tag: "Rankings" },
+              { title: "New NEP Guidelines for Engineering Programs Released", tag: "Policy Update" }
+            ].map((item, i) => (
               <div key={i} className="group cursor-pointer">
-                <div className="h-48 bg-gray-200 rounded-2xl mb-4 overflow-hidden relative">
-                  <img src={`https://source.unsplash.com/random/400x300/?campus,students,${i}`} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl mb-4 flex items-center justify-center">
+                  <span className="text-5xl">📰</span>
                 </div>
-                <p className="text-blue-600 text-xs font-bold uppercase tracking-wide mb-2">Admissions 2026</p>
-                <h3 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-blue-600 transition">Top Universities Announce Early Application Deadlines</h3>
-                <p className="text-sm text-gray-500 line-clamp-2">Stay ahead of the curve by preparing your documents for the upcoming admission cycles across major technical universities.</p>
+                <p className="text-blue-600 text-xs font-bold uppercase tracking-wide mb-2">{item.tag}</p>
+                <h3 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-blue-600 transition">{item.title}</h3>
+                <p className="text-sm text-gray-500 line-clamp-2">Stay ahead of the curve by preparing your documents for the upcoming admission cycles across major universities.</p>
               </div>
             ))}
           </div>
@@ -298,46 +296,6 @@ export default function Home() {
           </form>
         </div>
       </section>
-
-      {/* ----------------- FOOTER ----------------- */}
-      <footer className="bg-white py-16 border-t border-gray-200">
-        <div className="container mx-auto px-6 max-w-7xl grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">C</div>
-              <span className="font-extrabold text-xl text-gray-900">Campus Compare</span>
-            </div>
-            <p className="text-sm text-gray-500 leading-relaxed">The ultimate destination to discover, compare, and apply to top institutions across India.</p>
-          </div>
-          <div>
-            <h4 className="font-bold text-gray-900 mb-4">Top Colleges</h4>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/search?query=B.Tech" className="hover:text-blue-600">B.Tech Colleges</Link></li>
-              <li><Link href="/search?query=MBA" className="hover:text-blue-600">MBA Colleges</Link></li>
-              <li><Link href="/search?query=MBBS" className="hover:text-blue-600">Medical Colleges</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-gray-900 mb-4">Exams</h4>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="#" className="hover:text-blue-600">JEE Main</Link></li>
-              <li><Link href="#" className="hover:text-blue-600">NEET</Link></li>
-              <li><Link href="#" className="hover:text-blue-600">CAT</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-gray-900 mb-4">Company</h4>
-            <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="#" className="hover:text-blue-600">About Us</Link></li>
-              <li><Link href="#" className="hover:text-blue-600">Contact</Link></li>
-              <li><Link href="#" className="hover:text-blue-600">Privacy Policy</Link></li>
-            </ul>
-          </div>
-        </div>
-        <div className="container mx-auto px-6 max-w-7xl mt-16 pt-8 border-t border-gray-100 text-center text-sm text-gray-400">
-          &copy; {new Date().getFullYear()} Campus Compare. Built with Next.js & Tailwind.
-        </div>
-      </footer>
     </div>
   );
 }

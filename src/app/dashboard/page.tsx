@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import CollegeCard, { College } from "../../components/CollegeCard";
+import CollegeCard, { College } from "@/components/CollegeCard";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -23,10 +23,9 @@ export default function Dashboard() {
 
     const fetchNearby = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/colleges/nearby?city=${encodeURIComponent(parsedUser.city)}`);
+        const res = await fetch(`/api/colleges?city=${encodeURIComponent(parsedUser.city)}&limit=6`);
         const data = await res.json();
-        setNearbyColleges(data);
+        setNearbyColleges(data.data || []);
       } catch (err) {
         console.error(err);
       } finally {

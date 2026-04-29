@@ -2,8 +2,8 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import CollegeCard, { College } from "../../components/CollegeCard";
-import FilterBar from "../../components/FilterBar";
+import CollegeCard, { College } from "@/components/CollegeCard";
+import FilterBar from "@/components/FilterBar";
 import { motion } from "framer-motion";
 
 function SearchPage() {
@@ -38,14 +38,16 @@ function SearchPage() {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/colleges/filters`);
+        const res = await fetch(`/api/colleges?limit=100`);
         const data = await res.json();
+        const cols: College[] = data.data;
         
-        setAllStates(data.states);
-        setAllCities(data.cities);
-        setAllTypes(data.types);
-        setAllCourses(data.courses);
+        setAllStates([...new Set(cols.map(c => c.state))].sort());
+        setAllCities([...new Set(cols.map(c => c.city))].sort());
+        setAllTypes([...new Set(cols.map(c => c.type))].sort());
+        const courseNames = new Set<string>();
+        cols.forEach(c => c.courses.forEach(cr => courseNames.add(cr.name)));
+        setAllCourses([...courseNames].sort());
       } catch (err) {
         console.error("Could not fetch metadata");
       }
@@ -58,8 +60,6 @@ function SearchPage() {
       if (isLoadMore) setLoadingMore(true);
       else setLoading(true);
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      
       const params = new URLSearchParams();
       params.append("page", pageNum.toString());
       params.append("limit", "12");
@@ -70,7 +70,7 @@ function SearchPage() {
       if (course) params.append("course", course);
       if (maxFees) params.append("maxFees", maxFees);
 
-      const res = await fetch(`${apiUrl}/colleges?${params.toString()}`);
+      const res = await fetch(`/api/colleges?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch data");
       const { data, meta } = await res.json();
       

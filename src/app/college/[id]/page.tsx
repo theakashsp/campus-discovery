@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { College } from "../../../components/CollegeCard";
+import { College } from "@/components/CollegeCard";
 
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -21,8 +21,7 @@ export default function CollegeDetailPage() {
     const fetchCollege = async () => {
       try {
         setLoading(true);
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-        const res = await fetch(`${apiUrl}/colleges/${id}`);
+        const res = await fetch(`/api/colleges/${id}`);
         if (!res.ok) throw new Error("College not found");
         const data = await res.json();
         setCollege(data);
