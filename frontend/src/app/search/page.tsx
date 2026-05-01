@@ -33,15 +33,20 @@ function SearchPage() {
   const [allTypes, setAllTypes] = useState<string[]>([]);
   const [allCourses, setAllCourses] = useState<string[]>([]);
 
-  const availableCities = state ? allCities.filter(() => true) : allCities;
+  const [allCollegesCache, setAllCollegesCache] = useState<College[]>([]);
+
+  const availableCities = state
+    ? [...new Set(allCollegesCache.filter(c => c.state === state).map(c => c.city))].sort()
+    : allCities;
 
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        const res = await fetch(`/api/colleges?limit=100`);
+        const res = await fetch(`/api/colleges?limit=500`);
         const data = await res.json();
         const cols: College[] = data.data;
-        
+
+        setAllCollegesCache(cols);
         setAllStates([...new Set(cols.map(c => c.state))].sort());
         setAllCities([...new Set(cols.map(c => c.city))].sort());
         setAllTypes([...new Set(cols.map(c => c.type))].sort());
@@ -59,7 +64,7 @@ function SearchPage() {
     try {
       if (isLoadMore) setLoadingMore(true);
       else setLoading(true);
-      
+
       const params = new URLSearchParams();
       params.append("page", pageNum.toString());
       params.append("limit", "12");
@@ -73,13 +78,13 @@ function SearchPage() {
       const res = await fetch(`/api/colleges?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch data");
       const { data, meta } = await res.json();
-      
+
       if (isLoadMore) {
         setColleges(prev => [...prev, ...data]);
       } else {
         setColleges(data);
       }
-      
+
       setTotalCount(meta.total);
       setHasMore(pageNum < meta.totalPages);
     } catch (err: any) {
@@ -123,11 +128,11 @@ function SearchPage() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans pb-12 pt-6">
       <main className="container mx-auto px-6">
-        
+
         {/* Search header / filters */}
         <div className="mb-8">
           <h1 className="text-3xl font-extrabold text-gray-800 mb-6">Explore Colleges</h1>
-          
+
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
             <div className="relative max-w-full mx-auto mb-6">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -145,7 +150,7 @@ function SearchPage() {
               />
             </div>
 
-            <FilterBar 
+            <FilterBar
               state={state} setState={(v) => updateFilters('state', v)}
               city={city} setCity={(v) => updateFilters('city', v)}
               type={type} setType={(v) => updateFilters('type', v)}
@@ -191,7 +196,7 @@ function SearchPage() {
             ))}
           </div>
         ) : colleges.length === 0 ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white p-16 rounded-2xl border border-gray-200 text-center shadow-sm"
@@ -199,7 +204,7 @@ function SearchPage() {
             <span className="text-6xl block mb-6">🏜️</span>
             <h3 className="text-2xl font-bold text-gray-800">No colleges matched your criteria</h3>
             <p className="text-gray-500 mt-2 text-lg">Try searching for broader terms or clearing your filters.</p>
-            <button 
+            <button
               onClick={clearFilters}
               className="mt-6 px-8 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition shadow"
             >
@@ -208,14 +213,14 @@ function SearchPage() {
           </motion.div>
         ) : (
           <>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ staggerChildren: 0.1 }}
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
             >
               {colleges.map((college, index) => (
-                <motion.div 
+                <motion.div
                   key={college.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -225,7 +230,7 @@ function SearchPage() {
                 </motion.div>
               ))}
             </motion.div>
-            
+
             {hasMore && (
               <div className="mt-16 flex justify-center">
                 <button
