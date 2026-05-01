@@ -28,13 +28,24 @@ const getAllColleges = (req, res) => {
   let filtered = colleges;
 
   if (query) {
-    const lowerQuery = query.toLowerCase();
-    filtered = filtered.filter(c => 
-      c.name.toLowerCase().includes(lowerQuery) ||
-      c.city.toLowerCase().includes(lowerQuery) ||
-      c.state.toLowerCase().includes(lowerQuery) ||
-      c.courses.some(crs => crs.name.toLowerCase().includes(lowerQuery))
+    const q = query.toLowerCase();
+    console.log("[SEARCH] Query:", q);
+    filtered = filtered.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.city.toLowerCase().includes(q) ||
+      c.state.toLowerCase().includes(q) ||
+      c.type.toLowerCase().includes(q) ||
+      (c.description && c.description.toLowerCase().includes(q)) ||
+      (c.accreditation && c.accreditation.toLowerCase().includes(q)) ||
+      (c.courses && c.courses.some(crs =>
+        crs.name.toLowerCase().includes(q) ||
+        (crs.eligibility && crs.eligibility.toLowerCase().includes(q))
+      )) ||
+      (c.admission && c.admission.exams && c.admission.exams.some(
+        exam => exam.toLowerCase().includes(q)
+      ))
     );
+    console.log("[SEARCH] Results:", filtered.length);
   }
 
   if (name) {
@@ -56,7 +67,8 @@ const getAllColleges = (req, res) => {
     filtered = filtered.filter(c => c.rating >= parseFloat(minRating));
   }
   if (course && course !== "") {
-    filtered = filtered.filter(c => c.courses.some(crs => crs.name === course));
+    const lowerCourse = course.toLowerCase();
+    filtered = filtered.filter(c => c.courses.some(crs => crs.name.toLowerCase().includes(lowerCourse)));
   }
 
   const pageNum = parseInt(page);

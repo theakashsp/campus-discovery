@@ -3,16 +3,14 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import CollegeCard, { College } from "@/components/CollegeCard";
-
-const Hero3D = dynamic(() => import("@/components/Hero3D"), { ssr: false });
+import HeroBackground from "@/components/HeroBackground";
 
 export default function Home() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; email: string; city: string } | null>(null);
   const [nearbyColleges, setNearbyColleges] = useState<College[]>([]);
   const [topColleges, setTopColleges] = useState<College[]>([]);
 
@@ -29,8 +27,9 @@ export default function Home() {
     const fetchTop = async () => {
       try {
         const res = await fetch(`/api/colleges?limit=6`);
+        if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
-        setTopColleges(data.data);
+        setTopColleges(data.data || []);
       } catch (err) {
         console.error(err);
       }
@@ -41,8 +40,9 @@ export default function Home() {
   const fetchNearby = async (city: string) => {
     try {
       const res = await fetch(`/api/colleges?city=${encodeURIComponent(city)}&limit=4`);
+      if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
-      setNearbyColleges(data.data.slice(0, 4));
+      setNearbyColleges(data.data?.slice(0, 4) || []);
     } catch (err) {
       console.error(err);
     }
@@ -59,14 +59,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans overflow-hidden">
-      
+
       {/* ----------------- TOP HERO ----------------- */}
       <section className="relative h-[85vh] flex items-center bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 overflow-hidden">
-        <Hero3D />
+        <HeroBackground />
         <div className="absolute inset-0 z-0 bg-black/30 pointer-events-none"></div>
 
         <div className="container mx-auto px-6 relative z-10">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -85,12 +85,12 @@ export default function Home() {
               </div>
               <input
                 type="text"
-                className="w-full pl-16 pr-32 py-5 rounded-2xl text-gray-900 text-xl md:text-2xl border-4 border-transparent focus:border-blue-400 focus:outline-none transition-all shadow-inner"
+                className="w-full pl-16 pr-32 py-5 rounded-2xl text-gray-900 placeholder-gray-400 text-xl md:text-2xl border-4 border-transparent focus:border-blue-400 focus:outline-none transition-all shadow-inner"
                 placeholder="Search colleges, cities, or courses..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              <button 
+              <button
                 type="submit"
                 className="absolute right-3 top-3 bottom-3 bg-blue-600 text-white font-bold px-8 rounded-xl hover:bg-blue-700 transition-colors shadow-md active:scale-95"
               >
@@ -118,7 +118,7 @@ export default function Home() {
             </div>
             <button onClick={() => router.push('/search')} className="text-blue-600 font-bold hover:underline hidden md:block">View All</button>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {nearbyColleges.length > 0 ? (
               nearbyColleges.map((col) => <CollegeCard key={col.id} college={col} />)
@@ -130,14 +130,21 @@ export default function Home() {
       </section>
 
       {/* ----------------- SECTION 2: EXPLORE PROGRAMS ----------------- */}
-      <section className="py-20 bg-white">
+      <section id="explore" className="py-20 bg-white">
         <div className="container mx-auto px-6 max-w-7xl">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-10 text-center">Explore Programs</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {["Top Rankings", "Find Colleges", "Compare", "Exams", "Predictor", "Course Finder"].map((item, idx) => (
-              <div key={idx} className="bg-gray-50 hover:bg-blue-50 border border-gray-100 rounded-2xl p-6 text-center cursor-pointer transition-all hover:shadow-md hover:-translate-y-1">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm mx-auto mb-3">🎓</div>
-                <h3 className="font-bold text-gray-800 text-sm">{item}</h3>
+            {[
+              { label: "Top Rankings", icon: "🏆", action: () => document.getElementById('rankings')?.scrollIntoView({ behavior: 'smooth' }) },
+              { label: "Find Colleges", icon: "🔍", action: () => router.push('/search') },
+              { label: "Compare", icon: "⚖️", action: () => router.push('/search') },
+              { label: "Exams", icon: "📝", action: () => document.getElementById('exams')?.scrollIntoView({ behavior: 'smooth' }) },
+              { label: "Predictor", icon: "🎯", action: () => router.push('/search?query=JEE') },
+              { label: "Course Finder", icon: "📚", action: () => document.getElementById('courses')?.scrollIntoView({ behavior: 'smooth' }) },
+            ].map((item, idx) => (
+              <div key={idx} onClick={item.action} className="bg-gray-50 hover:bg-blue-50 border border-gray-100 rounded-2xl p-6 text-center cursor-pointer transition-all hover:shadow-md hover:-translate-y-1">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl shadow-sm mx-auto mb-3">{item.icon}</div>
+                <h3 className="font-bold text-gray-800 text-sm">{item.label}</h3>
               </div>
             ))}
           </div>
@@ -159,7 +166,7 @@ export default function Home() {
       </section>
 
       {/* ----------------- SECTION 4: RANKINGS TABLE ----------------- */}
-      <section className="py-20 bg-gray-50">
+      <section id="rankings" className="py-20 bg-gray-50 scroll-mt-24">
         <div className="container mx-auto px-6 max-w-7xl">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-10">Top Ranked Colleges in India</h2>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -187,7 +194,7 @@ export default function Home() {
                       </div>
                     </td>
                     <td className="p-4 font-bold text-yellow-600 hidden md:table-cell">⭐ {col.rating}</td>
-                    <td className="p-4 font-bold text-green-600 hidden lg:table-cell">₹{(col.fees_max/100000).toFixed(1)}L</td>
+                    <td className="p-4 font-bold text-green-600 hidden lg:table-cell">₹{(col.fees_max / 100000).toFixed(1)}L</td>
                     <td className="p-4">
                       <button onClick={() => router.push(`/college/${col.id}`)} className="text-blue-600 font-bold hover:underline">Details &rarr;</button>
                     </td>
@@ -230,15 +237,20 @@ export default function Home() {
       </section>
 
       {/* ----------------- SECTION 7: COURSES ----------------- */}
-      <section className="py-20 bg-white">
+      <section id="courses" className="py-20 bg-white scroll-mt-24">
         <div className="container mx-auto px-6 max-w-7xl">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-10">Popular Courses</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {["B.Tech", "MBA", "MBBS"].map((course) => (
-              <div key={course} className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition cursor-pointer">
-                <h3 className="text-xl font-bold text-blue-600 mb-2">{course}</h3>
-                <p className="text-gray-600 text-sm mb-4">Explore top institutions offering {course} degrees globally recognized.</p>
-                <button onClick={() => router.push(`/search?query=${course}`)} className="text-gray-900 font-bold text-sm hover:underline">View Colleges &rarr;</button>
+            {[
+              { name: "B.Tech", icon: "💻", desc: "Top engineering programs from IITs, NITs and leading private universities." },
+              { name: "MBA", icon: "📊", desc: "Premier management programs from IIMs and top B-schools across India." },
+              { name: "MBBS", icon: "🩺", desc: "Medical programs from AIIMS, government and private medical colleges." },
+            ].map((course) => (
+              <div key={course.name} onClick={() => router.push(`/search?query=${course.name}`)} className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer group">
+                <span className="text-3xl block mb-3">{course.icon}</span>
+                <h3 className="text-xl font-bold text-blue-600 mb-2 group-hover:text-blue-700 transition-colors">{course.name}</h3>
+                <p className="text-gray-600 text-sm mb-4">{course.desc}</p>
+                <span className="text-gray-900 font-bold text-sm group-hover:underline">View Colleges &rarr;</span>
               </div>
             ))}
           </div>
@@ -246,14 +258,21 @@ export default function Home() {
       </section>
 
       {/* ----------------- SECTION 8: EXAMS ----------------- */}
-      <section className="py-20 bg-gray-50">
+      <section id="exams" className="py-20 bg-gray-50 scroll-mt-24">
         <div className="container mx-auto px-6 max-w-7xl">
           <h2 className="text-3xl font-extrabold text-gray-900 mb-10">Entrance Exams</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {["JEE Main", "CAT", "NEET", "GATE"].map((exam) => (
-              <div key={exam} className="bg-white border border-gray-200 p-6 rounded-2xl text-center shadow-sm hover:shadow-md transition cursor-pointer">
-                <h3 className="font-extrabold text-gray-900 text-lg mb-1">{exam}</h3>
-                <p className="text-xs text-gray-500 font-medium">National Level</p>
+            {[
+              { name: "JEE Main", icon: "⚡", level: "National Level", desc: "Engineering" },
+              { name: "CAT", icon: "📈", level: "National Level", desc: "Management" },
+              { name: "NEET", icon: "🔬", level: "National Level", desc: "Medical" },
+              { name: "GATE", icon: "🎓", level: "National Level", desc: "Postgraduate" },
+            ].map((exam) => (
+              <div key={exam.name} onClick={() => router.push(`/search?query=${exam.name}`)} className="bg-white border border-gray-200 p-6 rounded-2xl text-center shadow-sm hover:shadow-lg hover:-translate-y-1 hover:border-blue-200 transition-all cursor-pointer group">
+                <span className="text-3xl block mb-2">{exam.icon}</span>
+                <h3 className="font-extrabold text-gray-900 text-lg mb-1 group-hover:text-blue-600 transition-colors">{exam.name}</h3>
+                <p className="text-xs text-gray-500 font-medium">{exam.level}</p>
+                <p className="text-xs text-blue-600 font-bold mt-2">{exam.desc} →</p>
               </div>
             ))}
           </div>
@@ -266,17 +285,18 @@ export default function Home() {
           <h2 className="text-3xl font-extrabold text-gray-900 mb-10">Latest News &amp; Updates</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { title: "Top Universities Announce Early Application Deadlines", tag: "Admissions 2026" },
-              { title: "NIRF Rankings 2026: IIT Madras Retains Top Spot", tag: "Rankings" },
-              { title: "New NEP Guidelines for Engineering Programs Released", tag: "Policy Update" }
+              { title: "Top Universities Announce Early Application Deadlines", tag: "Admissions 2026", icon: "📅", query: "B.Tech" },
+              { title: "NIRF Rankings 2026: IIT Madras Retains Top Spot", tag: "Rankings", icon: "🏆", query: "IIT" },
+              { title: "New NEP Guidelines for Engineering Programs Released", tag: "Policy Update", icon: "📋", query: "Engineering" }
             ].map((item, i) => (
-              <div key={i} className="group cursor-pointer">
-                <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl mb-4 flex items-center justify-center">
-                  <span className="text-5xl">📰</span>
+              <div key={i} onClick={() => router.push(`/search?query=${encodeURIComponent(item.query)}`)} className="group cursor-pointer">
+                <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-200 rounded-2xl mb-4 flex items-center justify-center group-hover:from-blue-200 group-hover:to-indigo-300 transition-all">
+                  <span className="text-5xl group-hover:scale-110 transition-transform">{item.icon}</span>
                 </div>
                 <p className="text-blue-600 text-xs font-bold uppercase tracking-wide mb-2">{item.tag}</p>
                 <h3 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-blue-600 transition">{item.title}</h3>
                 <p className="text-sm text-gray-500 line-clamp-2">Stay ahead of the curve by preparing your documents for the upcoming admission cycles across major universities.</p>
+                <span className="text-blue-600 font-bold text-sm mt-2 inline-block group-hover:underline">Read more →</span>
               </div>
             ))}
           </div>
@@ -289,7 +309,7 @@ export default function Home() {
         <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
           <h2 className="text-4xl font-extrabold text-white mb-4">Never Miss an Update</h2>
           <p className="text-gray-400 mb-10 text-lg">Get the latest college admission notifications and exam alerts directly in your inbox.</p>
-          <form className="flex flex-col md:flex-row gap-4 justify-center">
+          <form onSubmit={(e) => e.preventDefault()} className="flex flex-col md:flex-row gap-4 justify-center">
             <input type="text" placeholder="Full Name" className="px-5 py-4 rounded-xl bg-gray-800 text-white border border-gray-700 focus:border-blue-500 outline-none flex-1" />
             <input type="email" placeholder="Email Address" className="px-5 py-4 rounded-xl bg-gray-800 text-white border border-gray-700 focus:border-blue-500 outline-none flex-1" />
             <button type="submit" className="bg-blue-600 text-white font-bold px-8 py-4 rounded-xl hover:bg-blue-500 transition">Subscribe Now</button>

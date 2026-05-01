@@ -7,7 +7,7 @@ import CollegeCard, { College } from "@/components/CollegeCard";
 
 export default function Dashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; email: string; city: string } | null>(null);
   const [nearbyColleges, setNearbyColleges] = useState<College[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,7 +17,7 @@ export default function Dashboard() {
       router.push("/login");
       return;
     }
-    
+
     const parsedUser = JSON.parse(userData);
     setUser(parsedUser);
 
@@ -51,7 +51,7 @@ export default function Dashboard() {
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
               Hello, {user.name} 👋
             </h1>
-            <button 
+            <button
               onClick={handleLogout}
               className="bg-white/20 hover:bg-white/30 text-white px-5 py-2 rounded-lg font-bold transition-colors"
             >
@@ -65,13 +65,13 @@ export default function Dashboard() {
       </div>
 
       <main className="container mx-auto px-6 max-w-6xl -mt-16">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 mb-10"
         >
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Top Colleges Near {user.city}</h2>
-          
+
           {loading ? (
             <div className="flex justify-center p-10">
               <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
@@ -93,7 +93,7 @@ export default function Dashboard() {
           )}
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
