@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export interface Course {
   name: string;
@@ -55,93 +55,118 @@ export default function CollegeCard({ college }: CollegeCardProps) {
     }
   };
 
+  const typeColor =
+    college.type === "Government"
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      : "bg-violet-50 text-violet-700 border-violet-200";
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full relative group overflow-hidden">
-      
-      {/* Badges */}
-      <div className="absolute top-3 left-3 flex flex-col gap-1 items-start z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+    <div className="group bg-white rounded-2xl border border-gray-100 flex flex-col h-full relative overflow-hidden transition-all duration-500 hover:shadow-xl hover:-translate-y-1 hover:border-gray-200">
+      {/* Badges — always visible */}
+      <div className="absolute top-3 left-3 flex gap-1.5 items-start z-10">
+        <span
+          className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border backdrop-blur-sm ${typeColor}`}
+        >
+          {college.type}
+        </span>
         {college.rating >= 4.7 && (
-          <span className="bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded shadow-sm">
+          <span className="bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold px-2.5 py-1 rounded-lg backdrop-blur-sm">
             ⭐ Top Rated
           </span>
         )}
       </div>
 
       {/* Image & Logo */}
-      <div className="relative h-44 overflow-hidden bg-gray-200">
+      <div className="relative h-44 overflow-hidden bg-gray-100">
         {college.image_url ? (
-          <img 
-            src={college.image_url} 
-            alt={college.name} 
+          <img
+            src={college.image_url}
+            alt={college.name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-blue-100"></div>
+          <div className="w-full h-full bg-gradient-to-br from-blue-100 to-indigo-100" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent"></div>
-        
-        <div className="absolute bottom-4 left-4 flex items-end gap-3 w-full pr-8">
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent" />
+
+        <div className="absolute bottom-3 left-3 flex items-end gap-3 w-full pr-12">
           {college.logo_url && (
-            <img 
-              src={college.logo_url} 
-              alt="logo" 
-              className="w-14 h-14 rounded-xl border-2 border-white shadow-md bg-white flex-shrink-0"
+            <img
+              src={college.logo_url}
+              alt="logo"
+              className="w-12 h-12 rounded-xl border-2 border-white/80 shadow-lg bg-white flex-shrink-0 backdrop-blur-sm"
+              loading="lazy"
             />
           )}
           <div className="text-white overflow-hidden">
-            <h2 className="text-lg font-bold line-clamp-1">{college.name}</h2>
-            <p className="text-xs text-gray-300 flex items-center gap-1">📍 {college.location}</p>
+            <h2 className="text-base font-bold line-clamp-1 drop-shadow-sm">
+              {college.name}
+            </h2>
+            <p className="text-xs text-gray-300 flex items-center gap-1 mt-0.5">
+              📍 {college.location}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="p-5 flex-grow flex flex-col">
-        <div className="space-y-3 text-gray-600 text-sm mb-4 flex-grow">
+      <div className="p-4 flex-grow flex flex-col">
+        {/* Stats */}
+        <div className="space-y-2.5 text-sm mb-4 flex-grow">
           <div className="flex items-center justify-between">
-            <span className="text-gray-500">Avg. Fees</span>
-            <span className="font-semibold text-green-600">
-              ₹{(college.fees_min / 100000).toFixed(1)}L - ₹{(college.fees_max / 100000).toFixed(1)}L / yr
+            <span className="text-gray-500 text-xs font-medium">Avg. Fees</span>
+            <span className="font-semibold text-emerald-600 text-xs">
+              ₹{(college.fees_min / 100000).toFixed(1)}L – ₹
+              {(college.fees_max / 100000).toFixed(1)}L / yr
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-500">Rating</span>
-            <span className="font-semibold text-gray-900 flex items-center gap-1">
-              ⭐ {college.rating} <span className="text-gray-400 font-normal">/ 5.0</span>
+            <span className="text-gray-500 text-xs font-medium">Rating</span>
+            <span className="font-semibold text-gray-900 flex items-center gap-1 text-xs">
+              ⭐ {college.rating}{" "}
+              <span className="text-gray-400 font-normal">/ 5.0</span>
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-gray-500">Placements</span>
-            <span className="font-semibold text-blue-600">{college.placements.placement_percent}% Placed</span>
+            <span className="text-gray-500 text-xs font-medium">Placements</span>
+            <span className="font-semibold text-blue-600 text-xs">
+              {college.placements.placement_percent}% Placed
+            </span>
           </div>
         </div>
-        
-        <div className="mt-auto border-t border-gray-100 pt-4 flex flex-col gap-3">
+
+        {/* Course tags */}
+        <div className="border-t border-gray-50 pt-3 flex flex-col gap-3 mt-auto">
           <div className="flex flex-wrap gap-1.5">
-            {college.courses.slice(0, 3).map(course => (
-              <span key={course.name} className="px-2 py-1 bg-gray-50 text-gray-700 border border-gray-200 text-xs font-medium rounded-md">
+            {college.courses.slice(0, 3).map((course) => (
+              <span
+                key={course.name}
+                className="px-2 py-0.5 bg-gray-50 text-gray-600 border border-gray-100 text-[11px] font-medium rounded-md"
+              >
                 {course.name}
               </span>
             ))}
             {college.courses.length > 3 && (
-              <span className="px-2 py-1 bg-gray-50 text-gray-500 text-xs font-medium rounded-md">
+              <span className="px-2 py-0.5 bg-gray-50 text-gray-400 text-[11px] font-medium rounded-md">
                 +{college.courses.length - 3}
               </span>
             )}
           </div>
-          
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <Link 
+
+          {/* Action buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            <Link
               href={`/college/${college.id}`}
-              className="w-full bg-blue-600 text-white px-3 py-2.5 rounded-lg hover:bg-blue-700 transition font-bold text-sm flex justify-center items-center text-center shadow-sm"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 py-2.5 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all font-bold text-xs flex justify-center items-center text-center shadow-sm hover:shadow-md"
             >
               View Details
             </Link>
             {college.website_url && (
-              <button 
-                className="w-full bg-white border border-gray-200 text-gray-700 px-3 py-2.5 rounded-lg hover:bg-gray-50 transition font-bold text-sm flex justify-center items-center shadow-sm"
+              <button
+                className="w-full bg-white border border-gray-200 text-gray-600 px-3 py-2.5 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all font-bold text-xs flex justify-center items-center"
                 onClick={openWebsite}
               >
-                Website
+                Website ↗
               </button>
             )}
           </div>
